@@ -6,6 +6,9 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use yii\helpers\ArrayHelper;
+use backend\models\Role;
+
 
 /**
  * User model
@@ -162,6 +165,14 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return $this->hasOne(Profile::className(), ['user_id'=>'id']);
     }
+    
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'username' => 'Username',
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -223,4 +234,41 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->password_reset_token = null;
     }
+    
+    Public function getRole()
+    {
+        return $this->hasOne(Role::className(),['role_value'=>'role_id']);
+        
+    }
+    
+    Public function getRoleName()
+    {
+        return $this->role ? $this->role->role_name : '- no role -';
+        
+    }
+    
+    public static function getRoleList()
+    {
+        $droptions = Role::find()->asArray()->all();
+        return Arrayhelper::map($droptions,'role_value', 'role_name');
+        
+    }
+    
+    public function getStatus()
+    {
+        return $this->hasOne(Status::className(),['status_value'=>'status_id']);
+    }
+    
+    public function getStatusName()
+    {
+        return $this->status ? $this->status->status_name : '- no status -';
+    }
+    
+    public static function getStatusList()
+    {
+        $dropoptions = Status::find()->asArray()->all();
+        return Arrayhelper::map($dropoptions,'status_value','status_name');
+    }
+
+
 }
