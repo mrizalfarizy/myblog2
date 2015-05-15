@@ -23,7 +23,7 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    const STATUS_DELETED = 0;
+    //const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
 
     /**
@@ -31,7 +31,8 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function tableName()
     {
-        return '{{%user}}';
+        //return '{{%user}}';
+          return 'user';
     }
 
     /**
@@ -40,7 +41,15 @@ class User extends ActiveRecord implements IdentityInterface
     public function behaviors()
     {
         return [
-            TimestampBehavior::className(),
+            //TimestampBehavior::className(),
+            'timestamp'=>[
+              'class'=> 'yii\behaviors\TimestampBehavior',
+              'attributes'=>[
+                  ActiveRecord::EVENT_BEFORE_INSERT=>['created_at','updated_at'],
+                  ActiveRecord::EVENT_BEFORE_UPDATE=>['updated_at'],
+              ],  
+              'value'=>new Expression('NOW()'),
+            ],
         ];
     }
 
@@ -50,8 +59,18 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            ['status', 'default', 'value' => self::STATUS_ACTIVE],
-            ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
+            ['status_id', 'default', 'value' => self::STATUS_ACTIVE],
+            //['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
+            ['role_id','default', 'value'=>10],
+            ['user_type_id','default', 'value'=>10],
+            ['username','filter', 'filter'=>'trim'],
+            ['username', 'required'],
+            ['username', 'unique'],
+            ['username','string','min'=>2,'max'=>255],
+            ['email','filter','filter'=>'trim'],
+            ['email','required'],
+            ['email','email'],
+            ['email','unique'],
         ];
     }
 
@@ -68,7 +87,8 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+        return static::findOne(['auth_key'=>$token]);
+        //throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
 
     /**
@@ -90,7 +110,15 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findByPasswordResetToken($token)
     {
-        if (!static::isPasswordResetTokenValid($token)) {
+        /*if (!static::isPasswordResetTokenValid($token)) {
+            return null;
+        }*/
+        
+        $expire=Yii::$app->params['user.passwordResetTokenExpire'];
+        $parts = explode('_', $token);
+        $timestamp=(int) end($parts);
+        if ($timestamp+$expire<time()){
+            //token expired
             return null;
         }
 
@@ -123,6 +151,11 @@ class User extends ActiveRecord implements IdentityInterface
     public function getId()
     {
         return $this->getPrimaryKey();
+    }
+    
+    public function getUsername()
+    {
+        return $this->username;
     }
 
     /**
