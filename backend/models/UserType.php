@@ -1,7 +1,6 @@
 <?php
 
-namespace app\models;
-//namespace backend\models
+namespace backend\models;
 
 use Yii;
 use common\models\Users;
@@ -31,7 +30,8 @@ class UserType extends \yii\db\ActiveRecord
         return [
             [['user_type_value'], 'required'],
             [['user_type_value'], 'integer'],
-            [['user_type_name'], 'string', 'max' => 45]
+            [['user_type_name'], 'string', 'max' => 45],
+            [['User_type_id'], 'in','range'=>array_keys($this->getUserTypeList())],
         ];
     }
 
