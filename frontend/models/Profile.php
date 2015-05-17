@@ -9,7 +9,6 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\helpers\ArrayHelper;
 use yii\db\Expression;
-use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "profile".
@@ -44,7 +43,7 @@ class Profile extends \yii\db\ActiveRecord
             [['first_name', 'last_name'], 'string','max'=>45],
             [['birthdate', 'created_at', 'updated_at'], 'safe'],
             [['birthdate'],'date','format'=>'d-m-Y'],
-            [['gender_id'],'in','range'=>array_keys($this-getGenderList())],
+            //[['gender_id'],'in','range'=>array_keys($this-getGenderList())],
         ];
     }
 
@@ -127,6 +126,15 @@ class Profile extends \yii\db\ActiveRecord
         $url=Url::to(['profile/update','id'=>$this->Id]);
         $options = [];
         return Html::a($this->id,$url,$options);
+    }
+    
+    public function beforeValidate()
+    {
+        if ($this->birthdate != null)
+        {
+            $new_date_format = date('Y-m-d', strtotime($this->birthdate));
+        }
+        return parent::beforeValidate();
     }
     
 }
